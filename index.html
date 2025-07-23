@@ -43,12 +43,12 @@
   </style>
 </head>
 <body>
-  <textarea id="input" placeholder="Escribe: pabaras y letras cortas"></textarea>
+  <textarea id="input" placeholder="Escribe: pabaras y nombre tumbados"></textarea>
 
   <script>
     const hydra = new Hydra({ detectAudio: false });
 
-    const palabras = {
+    const palabras = 
      corridos: () => osc(2, 0.5, 2).colorama(0.1),
       tumbados: () => noise(2, 0.5, 2).colorama(-0.9),
       nata: () => noise(6, 0.5, 2).colorama(0.2).modulateScale(o0, 0.8),
@@ -79,7 +79,7 @@ magt : () => {
   return shape
 },
 };
-
+    
     const input = document.getElementById("input");
 
     input.addEventListener("input", () => {

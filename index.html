@@ -5,116 +5,38 @@
   <title>Hydra Sublenguaje</title>
   <script src="https://unpkg.com/hydra-synth"></script>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      height: 100%;
-      background: black;
-    }
-
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-    }
-
+    html, body { margin: 0; padding: 0; overflow: hidden; background: black; }
     #input {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80%;
-      max-width: 600px;
-      height: 80px;
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
-      font-size: 18px;
-      border: 2px solid white;
-      border-radius: 10px;
-      padding: 10px;
-      z-index: 10;
-      backdrop-filter: blur(4px);
-      resize: none;
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      width: 80%; max-width: 600px; height: 80px; color: white;
+      background: rgba(0, 0, 0, 0.5); font-size: 18px;
     }
   </style>
 </head>
 <body>
-  <textarea id="input" placeholder="Escribe: pabaras y letras cortas"></textarea>
+  <textarea id="input" placeholder="Escribe una palabra clave"></textarea>
 
   <script>
-    const hydra = new Hydra({ detectAudio: false });
+    const hydraCanvas = document.createElement("canvas");
+    document.body.appendChild(hydraCanvas);
+    const hydra = new Hydra({ canvas: hydraCanvas });
 
     const palabras = {
-     corridos: () => osc(2, 0.5, 2).colorama(0.1),
-      tumbados: () => noise(2, 0.5, 2).colorama(-0.9),
       nata: () => noise(6, 0.5, 2).colorama(0.2).modulateScale(o0, 0.8),
-      junior: () => osc(10, 0.5, 2).colorama(-0.9).modulate(o0, 0.5),
       peso: () => voronoi(2, 0.5, 2).colorama(-0.9).modulate(osc(3, 0.5, 1), 0.5),
-      billete: () => noise(3, 0.4).modulate(osc(2, 0.5, 2), 0.9).diff(noise(2, 0.5, 2)),
-      diamantes: () => voronoi([4,2],7,2).modulatePixelate(osc(),0.70,0.5).scale(2).colorama(-0.95),
-morro: () => osc().modulate(noise(),0.25).scale([1,3,6],5).colorama(-0.40).colorama(1),
-mota: () => noise(15).modulate(voronoi(3,2,5)).kaleid(30).colorama(0.40).colorama(0.5).scale(1),
-patrulla: () => shape(4,0.5,0.9).modulateRotate(noise(),0.9).mult(osc(50)).scale([0.90].fast(10)).colorama(8),
-rockstar: () => voronoi().modulateRotate(osc(1,0.5,0).kaleid(10).scale(0.5),9,0).mult(osc(5,-0.1,8).kaleid(9)).colorama(0.5),
-rubicon: () => osc([5,3,9]).modulatePixelate(noise(),8).mult(osc([10])).scale([0.90].fast(20)).colorama(-0.70),
-culiacan: () => noise([4,8,2],6,0.5).colorama(0.590).pixelate(10,8).modulateRotate(noise([5,8]),0.9,4),
-ariel: () => noise(10,4,10).modulateRepeatX(osc([15,9]),0.5).colorama(-0.590).mult(osc([3],6,0.6)).scale([0.9].fast(205)),
-chalinno: () => osc().scale(10).rotate(4,5).kaleid(10).colorama(0.9).modulateScrollX(osc(),0.5).mult(voronoi([5,8],8)).colorama(0.8),
-baraja: () => voronoi([9,15],3,4).colorama(-0.6).modulatePixelate(voronoi([9,10]),0.5).colorama(1).mult(osc([3,5]),0.5).colorama(-0.2).luma(0.3,0.5),
-oro: () => osc([15,5,1],25,3).colorama(-0.10).modulateKaleid(noise([5,1]),0.5).rotate(8,5).scale(0.45,3,5).colorama(-5),
-tito: () => voronoi(.5,.2,.9).modulate(noise(.5),0.5).color(9,5,6).luma(0.5),
-doble p: () => osc(2,1,.009).pixelate(10,10).kaleid(8),
-humilde: () => noise(5).color(4,5,7).pixelate(10,10),
-jema: () => osc(4,0.1,2).luma(0).mult(voronoi([10,5,15],0.2, 0.5).thresh(0.5, 0.1)).scale([2,3].fast(1.2)).rotate(15,2).modulate(src(o0)).modulateScale(osc([1,4,8],-0.5,0).scale(2),15,0).modulatePixelate(noise(5).pixelate([8,2,5],[2,8,5]),1024,8),
-},
-};
+    };
 
     const input = document.getElementById("input");
 
     input.addEventListener("input", () => {
       const texto = input.value.toLowerCase().trim();
-
-      // Si contiene comas: modulación encadenada
-      if (texto.includes(",")) {
-        const modWords = texto.split(",").map(w => w.trim()).filter(w => palabras[w]);
-        if (modWords.length >= 2) {
-          let base = palabras[modWords[0]]();
-          for (let i = 1; i < modWords.length; i++) {
-            base = palabras[modWords[i]]().modulate(base, 0.5 + 0.3 * Math.random()); // modulación aleatoria
-          }
-          base.out();
-          return;
-        }
-      }
-
-      // Si contiene comas: modulación encadenada
-      if (texto.includes("x")) {
-        const modWords = texto.split(",").map(w => w.trim()).filter(w => palabras[w]);
-        if (modWords.length >= 2) {
-          let base = palabras[modWords[0]]();
-          for (let i = 1; i < modWords.length; i++) {
-            base = palabras[modWords[i]]().modulateScale(base, 0.5 + 0.3 * Math.random()); // modulación aleatoria
-          }
-          base.out();
-          return;
-        }
-      }
-
-      // Si no hay coma, renderiza todo en capas independientes
-      const entradas = texto.split(/\s+/).map(w => w.trim()).filter(w => palabras[w]);
-      if (entradas.length > 0) {
-        // Componer blend entre todas
-        let comp = palabras[entradas[0]]();
-        for (let i = 1; i < entradas.length; i++) {
-          comp = comp.diff(palabras[entradas[i]](), 0.5);
-        }
-        comp.out();
+      if (palabras[texto]) {
+        palabras[texto]().out();
       }
     });
+
+    // Visual de arranque
+    osc(10, 0.1, 1).out();
   </script>
 </body>
 </html>

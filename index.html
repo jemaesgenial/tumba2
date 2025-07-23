@@ -52,7 +52,7 @@
       billete: () => noise(3, 0.4).modulate(osc(2, 0.5, 2), 0.9).diff(noise(2, 0.5, 2)),
       diamantes: () => voronoi([4,2],7,2).modulatePixelate(osc(),0.7,0.5).scale(2).colorama(-0.95),
 
-      // VIDEO: nata
+       // VIDEO: nata
       nata: () => {
         s0.initVideo("https://media.tenor.com/9xMxrnpwoKQAAAPo/natanael-cano.mp4");
         return src(s0).kaleid(3).modulate(noise(3), 0.2);

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hydra Corridos Tumbados + Video</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      width: 100vw; height: 100vh;
+      background: black;
+      overflow: hidden;
+    }
+    canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 0;
+    }
+    #input {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 600px;
+      height: 60px;
+      padding: 10px;
+      font-size: 18px;
+      color: white;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid white;
+      border-radius: 10px;
+      z-index: 10;
+      resize: none;
+    }
+  </style>
+</head>
+<body>
+  <textarea id="input" placeholder="Escribe palabras como: nata, junior, peso, ariel..."></textarea>
+
+  <script src="https://unpkg.com/hydra-synth"></script>
+  <script>
+    const canvas = document.createElement("canvas");
+    document.body.appendChild(canvas);
+    const hydra = new Hydra({ canvas });
+
+    osc(4, 0.1, 1).out(); // visual inicial
+
+    const palabras = {
+      corridos: () => osc(2, 0.5, 2).colorama(0.1),
+      tumbados: () => noise(2, 0.5, 2).colorama(-0.9),
+      billete: () => noise(3, 0.4).modulate(osc(2, 0.5, 2), 0.9).diff(noise(2, 0.5, 2)),
+      diamantes: () => voronoi([4,2],7,2).modulatePixelate(osc(),0.7,0.5).scale(2).colorama(-0.95),
+
+       // VIDEO: nata
+      nata: () => {
+        s0.initVideo("https://media.tenor.com/9xMxrnpwoKQAAAPo/natanael-cano.mp4");
+        return src(s0).kaleid(3).modulate(noise(3), 0.2);
+      },
+
+      // VIDEO: junior
+      junior: () => {
+        s0.initVideo("https://media.tenor.com/zFBahnOy_vQAAAPo/junior-h.mp4");
+        return src(s0).pixelate(20, 20).modulateScale(noise(3), 0.3).scale(1.2);
+      },
+
+      // VIDEO: peso
+      peso: () => {
+        s0.initVideo("https://media.tenor.com/UkMiKAlZmIoAAAPo/peso-pluma-peso-pluma-bailando.mp4");
+        return src(s0).rotate(0.3).kaleid(6).modulate(noise(2));
+      },
+
+      // VIDEO: ariel
+      ariel: () => {
+        s0.initVideo("https://media.tenor.com/x_ex6b7TC4UAAAPo/cantando-emocionado.mp4");
+        return src(s0).scrollX(0.01).scrollY(0.01).modulateRotate(osc(3), 0.2);
+      }
+    };
+
+    const input = document.getElementById("input");
+
+    input.addEventListener("input", () => {
+      const texto = input.value.toLowerCase().trim();
+
+      // Comas: modulación secuencial
+      if (texto.includes(",")) {
+        const modWords = texto.split(",").map(w => w.trim()).filter(w => palabras[w]);
+        if (modWords.length >= 2) {
+          let base = palabras[modWords[0]]();
+          for (let i = 1; i < modWords.length; i++) {
+            base = palabras[modWords[i]]().modulate(base, 0.5 + 0.3 * Math.random());
+          }
+          base.out();
+          return;
+        }
+      }
+
+      // Con "x": modulateScale
+      if (texto.includes("x")) {
+        const modWords = texto.split("x").map(w => w.trim()).filter(w => palabras[w]);
+        if (modWords.length >= 2) {
+          let base = palabras[modWords[0]]();
+          for (let i = 1; i < modWords.length; i++) {
+            base = palabras[modWords[i]]().modulateScale(base, 0.5 + 0.3 * Math.random());
+          }
+          base.out();
+          return;
+        }
+      }
+
+      // Palabras separadas por espacios: combinación visual
+      const entradas = texto.split(/\s+/).map(w => w.trim()).filter(w => palabras[w]);
+      if (entradas.length > 0) {
+        let comp = palabras[entradas[0]]();
+        for (let i = 1; i < entradas.length; i++) {
+          comp = comp.diff(palabras[entradas[i]](), 0.5);
+        }
+        comp.out();
+      }
+    });
+  </script>
+</body>
+</html>
